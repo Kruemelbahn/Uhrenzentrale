@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../XSLT/decoder.xsl"?>
+<!-- Copyright (C) JMRI 2002, 2004, 2007 All rights reserved -->
+<!--                                                                        -->
+<!-- JMRI is free software; you can redistribute it and/or modify it under  -->
+<!-- the terms of version 2 of the GNU General Public License as published  -->
+<!-- by the Free Software Foundation. See the "COPYING" file for a copy     -->
+<!-- of this license.                                                       -->
+<!--                                                                        -->
+<!-- JMRI is distributed in the hope that it will be useful, but WITHOUT    -->
+<!-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or  -->
+<!-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License  -->
+<!-- for more details.                                                      -->
+<decoder-config xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://jmri.org/xml/schema/decoder.xsd" showEmptyPanes="no">
+  <version author="Michael Zimmermann" version="1" lastUpdated="20231027"/>
+  <decoder>
+    <family name="KS" mfg="Public-domain and DIY">
+      <model model="Uhrenzentrale using LNSV2" productID="11" developerID="58" />
+    </family>
+    <programming direct="no" paged="no" register="no" ops="no">
+        <mode>LOCONETSV2MODE</mode>
+    </programming>
+    <variables>
+
+      <variable CV="1" item="CV1:Identificationnumber" readOnly="no" comment="Identification number">
+        <decVal min="1" max="126"/>
+        <label>Identificationnumber</label>
+		<label xml:lang="de">Identifikationsnummer</label>
+		<tooltip>&lt;html&gt;
+				 Eindeutige Identifikationsnummer, 1...126, Standard = 1 
+				 &lt;/html&gt;
+		</tooltip>
+      </variable>
+
+	  <variable CV="7" item="CV7:Software Version" readOnly="no">
+        <decVal />
+		<label>Software Version</label>
+		<label xml:lang="de">Softwareversion</label>
+		<tooltip>&lt;html&gt;
+				 eigentlich nur lesbar.&lt;br/&gt;
+				 Wird hier der Wert 0 eingetragen, so werden alls CVs auf ihren&lt;br/&gt;
+				 Standardwert zurueckgesetzt. Anschliessend sind alle CVs auf ihren&lt;br/&gt;
+				 richtigen Wert zu setzen (=neue Inbetriebnahme!)&lt;br/&gt;
+				 &lt;/html&gt;
+		</tooltip>
+	  </variable>
+
+      <variable CV="8" item="CV8:ProductID" readOnly="yes" comment="Product ID">
+        <decVal />
+        <label>Product ID</label>
+		<label xml:lang="de">Kennung: Uhrenzentrale</label>
+		<tooltip>Uhrenzentrale = 11</tooltip>
+      </variable>
+
+      <variable CV="2" item="Advanced Group 1 Option 1" readOnly="no" comment="Clock devider">
+        <decVal min="10" max="99"/>
+        <label>Clock devider 10:n</label>
+		<label xml:lang="de">Uhrtaktteiler 10:n</label>
+		<tooltip>&lt;html&gt;
+				 Der Wert n (10...99) gibt an, um welchen Faktor der Uhrentakt
+				 gegenueber des normalen Taktes einer Uhr schneller geht&lt;br/&gt;
+				 Standard = 30&lt;br/&gt;
+				 30 bedeutet einen Takt von 10:30 (1:3), d.h. der Taktgenerator ist dreimal&lt;br/&gt;
+				 schneller als eine normale Uhr.
+				 &lt;/html&gt;
+		</tooltip>
+      </variable>
+
+	  <variable CV="3" item="Advanced Group 1 Option 2" readOnly="no" comment="Waitingtime">
+        <decVal min="0" max="9"/>
+        <label>Waitingtime until change into control mode in s</label>
+		<label xml:lang="de">Wartezeit bis zum Wechsel in den Steuerungsmodus in s</label>
+		<tooltip>&lt;html&gt;
+				 0...9, Standard = 3 (=3s)&lt;br/&gt;
+				 Wartezeit bis zum automatischen Wechsel in den Steuerungsmodus.&lt;br/&gt;
+				 Ein Wert von 0 verhindert den automatischen Wechsel.
+				 &lt;/html&gt;
+		</tooltip>
+	  </variable>
+
+	  <variable CV="9" item="Advanced Group 1 Option 3" readOnly="no" mask="XXVXXXXX">
+		<enumVal>
+			<enumChoice value="0">
+				<choice>FastClock normal phase</choice>
+				<choice xml:lang="de">normale Phasenlage</choice>
+			</enumChoice>
+			<enumChoice value="1">
+				<choice>FastClock invert phase</choice>
+				<choice xml:lang="de">Phasenlage invertieren</choice>
+			</enumChoice>
+		</enumVal>
+		<label>Type of phase</label>
+		<label xml:lang="de">Phasenlage</label>
+		<tooltip>&lt;html&gt;
+				 CV9, Bit5 (Standard=normale Phasenlage)&lt;br/&gt;
+				 wird auch bei direkter Uhrentaktausgabe verwendet (CV10 Bit4=direktes Taktsignal)&lt;br/&gt;
+				 Wird bei Erst-IBN eingestellt und sollte danach nicht mehr geaendert werden
+				 &lt;/html&gt;
+		</tooltip>
+	  </variable>
+
+	  <variable CV="9" item="Advanced Group 1 Option 4" readOnly="no" mask="XXXXVXXX">
+		<enumVal>
+			<enumChoice value="0">
+				<choice>FastClock running only with telegrams</choice>
+				<choice xml:lang="de">FastClock laeuft nur mit Telegrammen</choice>
+			</enumChoice>
+			<enumChoice value="1">
+				<choice>FastClock internally running</choice>
+				<choice xml:lang="de">FastClock laeuft nach Initialisierung intern weiter</choice>
+			</enumChoice>
+		</enumVal>
+		<label>FastClockMode</label>
+		<label xml:lang="de">FastClock-Modus</label>
+		<tooltip>&lt;html&gt;
+				 CV9, Bit3 (Standard=FastClock laeuft nur mit Telegrammen)&lt;br/&gt;
+				 Wird bei Erst-IBN eingestellt und sollte danach nicht mehr geaendert werden
+				 &lt;/html&gt;
+		</tooltip>
+	  </variable>
+
+	  <variable CV="9" item="Advanced Group 1 Option 5" readOnly="no" mask="XXXVXXXX">
+		<enumVal>
+			<enumChoice value="0">
+				<choice>disable support for JMRI</choice>
+				<choice xml:lang="de">Unterstützung für JMRI deaktiviert</choice>
+			</enumChoice>
+			<enumChoice value="1">
+				<choice>enable support for JMRI</choice>
+				<choice xml:lang="de">Unterstützung für JMRI aktiviert</choice>
+			</enumChoice>
+		</enumVal>
+		<label>FastClockMode</label>
+		<label xml:lang="de">JMRI-Telegramme</label>
+		<tooltip>&lt;html&gt;
+				 CV9, Bit4 (Standard=FastClock-Telegramme von JMRI unterstützen)&lt;br/&gt;
+				 nach einer Aenderung ist ein Neustart erforderlich!&lt;br/&gt;
+				 Wird bei Erst-IBN eingestellt und sollte danach nicht mehr geaendert werden
+				 &lt;/html&gt;
+		</tooltip>
+	  </variable>
+
+	  <variable CV="9" item="Advanced Group 1 Option 6" readOnly="no" mask="XXXXXVXX">
+		<enumVal>
+			<enumChoice value="0">
+				<choice>Master</choice>
+				<choice xml:lang="de">Master</choice>
+			</enumChoice>
+			<enumChoice value="1">
+				<choice>Fastclock-Slave</choice>
+				<choice xml:lang="de">Fastclock-Slave</choice>
+			</enumChoice>
+		</enumVal>
+		<label>FastClock operationmode</label>
+		<label xml:lang="de">FastClock-Betriebsart</label>
+		<tooltip>&lt;html&gt;
+				 CV9, Bit2 (Standard=Master)&lt;br/&gt;
+				 nach einer Aenderung ist ein Neustart erforderlich!&lt;br/&gt;
+				 Ist CV9 Bit2=Master, ist die Uhrenzentrale zusaetzlich immer auch&lt;br/&gt;
+				 FastClock-Master.&lt;br/&gt;
+				 Wird bei Erst-IBN eingestellt und sollte danach nicht mehr geaendert werden
+				 &lt;/html&gt;
+		</tooltip>
+	  </variable>
+
+	  <variable CV="10" item="Advanced Group 1 Option 7" readOnly="no" mask="XXXXXXXV">
+		<enumVal>
+			<enumChoice value="0">
+				<choice>Disabled</choice>
+				<choice xml:lang="de">gesperrt</choice>
+			</enumChoice>
+			<enumChoice value="1">
+				<choice>Enabled</choice>
+				<choice xml:lang="de">freigegeben</choice>
+			</enumChoice>
+		</enumVal>
+		<label>changing clock devider</label>
+		<label xml:lang="de">Taktaenderung im Steuerungsmodus</label>
+		<tooltip>CV10, Bit0 (Standard=Taktaenderungen gesperrt)</tooltip>
+	  </variable>
+
+	  <variable CV="10" item="Advanced Group 1 Option 8" readOnly="no" mask="XXXVXXXX">
+		<enumVal>
+			<enumChoice value="0">
+				<choice>DCC pulse</choice>
+				<choice xml:lang="de">DCC-Signal</choice>
+			</enumChoice>
+			<enumChoice value="1">
+				<choice>direct pulse</choice>
+				<choice xml:lang="de">direkte Uhr-Ansteuerung</choice>
+			</enumChoice>
+		</enumVal>
+		<label>Type of Clockoutput</label>
+		<label xml:lang="de">Ausgabeart Uhrentakt</label>
+		<tooltip>&lt;html&gt;
+				 CV10, Bit4 (Standard=direkte Uhr-Ansteuerung)&lt;br/&gt;
+				 nach einer Aenderung ist ein Neustart erforderlich!
+				 &lt;/html&gt;
+		</tooltip>
+	  </variable>
+
+      <variable CV="11" item="Advanced Group 1 Option 9" readOnly="no" comment="LN Adr Clock StartStop">
+        <decVal min="0" max="2048"/>
+        <label>LN Adr Clock StartStop</label>
+		<label xml:lang="de">LN Adr Uhrenzentrale StartStop</label>
+		<tooltip>&lt;html&gt;
+				 0...2048, Standard = 671&lt;br/&gt;
+				 Es wird Telegramm-Typ B0 gesendet (&lt;i&gt;Umschalter / Ausgang Festkontakt&lt;/i&gt;)&lt;br/&gt;
+				 &lt;/html&gt;
+		</tooltip>
+      </variable>
+
+    </variables>
+  </decoder>
+
+  <xi:include href="http://jmri.org/xml/decoders/public_domain/pane-KSVersionMap.xml" />
+
+</decoder-config>
