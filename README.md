@@ -7,7 +7,7 @@ For more details please refer to the manual [manual](Uhrenzentrale.pdf)<br>
 
 ### Requested libraries
 Uhrenzentrale requires my libraries listed below in addition to various Arduino standard libraries:<br> 
-- [HeartBeat](http://www.github.com/Kruemelbahn/HeartBeat)<br>
-- [LCDPanel](http://www.github.com/Kruemelbahn/LCDPanel)<br>
-- [LocoNetKS](http://www.github.com/Kruemelbahn/LocoNetKS)<br>
-- [OLEDPanel](http://www.github.com/Kruemelbahn/OLEDPanel)<br>
+- [HeartBeat](http://www.github.com/Kruemelbahn/HeartBeat)
+- [LCDPanel](http://www.github.com/Kruemelbahn/LCDPanel)
+- [LocoNetKS](http://www.github.com/Kruemelbahn/LocoNetKS)
+- [OLEDPanel](http://www.github.com/Kruemelbahn/OLEDPanel)
