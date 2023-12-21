@@ -90,17 +90,17 @@ discrete In/Outs used for functionalities:
 
 #include "CV.h"
 
-#define ENABLE_LN (1)
-#define ENABLE_LN_E5 (1)
-#define ENABLE_LN_FC_MODUL  (GetCV(ADD_FUNCTIONS_1) & 0x04)
-#define ENABLE_LN_FC_INTERN (GetCV(ADD_FUNCTIONS_1) & 0x08)
-#define ENABLE_LN_FC_INVERT (GetCV(ADD_FUNCTIONS_1) & 0x20)
-#define ENABLE_LN_FC_SLAVE  (ENABLE_LN_FC_MODUL)
-#define ENABLE_LN_FC_MASTER (!ENABLE_LN_FC_SLAVE)
-#define ENABLE_LN_FC_JMRI   (GetCV(ADD_FUNCTIONS_1) & 0x10)
+#define ENABLE_LN             (1)
+#define ENABLE_LN_E5          (1)
+#define ENABLE_LN_FC_MODUL    (GetCV(ADD_FUNCTIONS_1) & 0x04)
+#define ENABLE_LN_FC_INTERN   (GetCV(ADD_FUNCTIONS_1) & 0x08)
+#define ENABLE_LN_FC_INVERT   (GetCV(ADD_FUNCTIONS_1) & 0x20)
+#define ENABLE_LN_FC_SLAVE    (ENABLE_LN_FC_MODUL)
+#define ENABLE_LN_FC_MASTER   (!ENABLE_LN_FC_SLAVE)
+#define ENABLE_LN_FC_JMRI     (GetCV(ADD_FUNCTIONS_1) & 0x10)
 
 #define ENABLE_DEVIDER_CHANGE (GetCV(ADD_FUNCTIONS_2) & 0x01)
-#define DIRECT_CLOCK_PULSE (GetCV(ADD_FUNCTIONS_2) & 0x10)
+#define DIRECT_CLOCK_PULSE    (GetCV(ADD_FUNCTIONS_2) & 0x10)
 
 #define UNREFERENCED_PARAMETER(P) { (P) = (P); }
 
@@ -229,4 +229,9 @@ void notifyFastClock(uint8_t Rate, uint8_t Day, uint8_t Hour, uint8_t Minute, ui
   Serial.println("]");
 #endif
   SetFastClock(Rate, Day, Hour, Minute, Sync);
+}
+
+void notifyFastClockFracMins(uint16_t FracMins)
+{
+  HandleFracMins(FracMins);
 }

@@ -88,13 +88,13 @@ void InvertClockRunning()
 	if (b_ClockIsRunning)
 	{ // (re)start:
     if(bSendFirstStartTelegramm)
- 			SendFastClockTelegram(OPC_WR_SL_DATA, ui8_FCHour, ui8_FCMinute, GetDevider()); // 0xEF
+ 			SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, GetDevider()); // 0xE7
 		ul_WaitDevider = millis();
 	}
 	if (!b_ClockIsRunning)
 	{ // stop:
     if(bSendFirstStopTelegramm)
- 			SendFastClockTelegram(OPC_WR_SL_DATA, ui8_FCHour, ui8_FCMinute, 0); // 0xEF, Devider(Rate) = 0 indicates that clockk has stopped 
+ 			SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, 0); // 0xE7, Devider(Rate) = 0 indicates that clockk has stopped 
 		ul_WaitDevider = millis();
 	}
   sendClockState();
@@ -173,7 +173,7 @@ void HandleClockCommander()
   		{
   			ul_WaitDevider = millis();
 				IncAndSetFastClock(&ui8_FCHour, &ui8_FCMinute);
-  			SendFastClockTelegram(OPC_WR_SL_DATA, ui8_FCHour, ui8_FCMinute, ui8_Devider); // 0xEF
+  			SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, ui8_Devider); // 0xE7
   
 				b_MinuteOdd = (ui8_FCMinute & 0x01 ? true : false);
 			}

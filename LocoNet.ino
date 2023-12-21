@@ -2,7 +2,7 @@
 #include <LocoNetKS.h>
 
 //=== declaration of var's =======================================
-LocoNetFastClockClassKS  FastClockKS;
+LocoNetFastClockClass  FastClock;
 
 static  lnMsg          *LnPacket;
 static  LnBuf          LnTxBuffer;
@@ -36,6 +36,7 @@ unsigned long ul_LastFastClockTick = 0;
 uint8_t ui8_WaitForTelegram = 0;
 unsigned long ul_WaitStartForTelegram = 0;
 uint8_t ui8_TrackState = 0;
+int16_t i16_FracMinStart(0);
 
 //=== functions for receiving telegrams from SerialMonitor =======
 #if defined TELEGRAM_FROM_SERIAL
@@ -113,11 +114,10 @@ void InitLocoNet()
   if(ENABLE_LN_FC_MODUL/* is also Slave */)
   {
     // Initialize the Fast Clock
-    FastClockKS.init(0, 0, 0); // DCS100CompatibleSpeed - CorrectDCS100Clock - NotifyFracMin
-    FastClockKS.initJMRI(ENABLE_LN_FC_JMRI); // IsJMRI
-  
+    FastClock.init(0, 0, 1); // DCS100CompatibleSpeed - CorrectDCS100Clock - NotifyFracMin
+
     // Poll the Current Time from the Command Station
-    FastClockKS.poll();
+    PollFastClock();
   }
 
 #if defined TELEGRAM_FROM_SERIAL
@@ -152,8 +152,15 @@ void HandleLocoNetMessages()
   {
     LocoNet.processSwitchSensorMessage(LnPacket);
 
-    if (ENABLE_LN_FC_MODUL) 
-      FastClockKS.processMessage(LnPacket);
+    if (ENABLE_LN_FC_MODUL)
+    {
+      // JMRI sends only EF 0E 7B ... (OPC_WR_SL_DATA) with clk_cntrl == 0 -> so we correct it:
+      if (ENABLE_LN_FC_JMRI && (LnPacket->fc.slot == FC_SLOT) && (LnPacket->fc.command == OPC_WR_SL_DATA) && !(LnPacket->fc.clk_cntrl & 0x40))
+        LnPacket->fc.clk_cntrl |= 0x40;
+      if ((LnPacket->fc.slot == FC_SLOT) && ((LnPacket->fc.command == OPC_WR_SL_DATA) || (LnPacket->fc.command == OPC_SL_RD_DATA)))
+        i16_FracMinStart = 0x3FFF/*FC_FRAC_MIN_BASE*/ - ((LnPacket->fc.frac_minsh << 7) + LnPacket->fc.frac_minsl);
+      FastClock.processMessage(LnPacket); // will call 'notifyFastClock' with sync=1 if neccessary 
+    }
 
     if(ENABLE_LN_FC_MASTER)
       HandleFastClockTelegram(LnPacket);
@@ -170,7 +177,7 @@ void HandleLocoNetMessages()
   } // if(LnPacket)
 
   if(ENABLE_LN_FC_MODUL/* we are also Slave */ && isTimeForProcessActions(&ul_LastFastClockTick, 67))
-    FastClockKS.process66msActions();
+    FastClock.process66msActions(); // will call 'notifyFastClock' with sync=0 if neccessary 
 }  
 
 void HandleFastClockTelegram(lnMsg *LnPacket)
@@ -201,7 +208,7 @@ void HandleFastClockTelegram(lnMsg *LnPacket)
 				Printout('R');
 #endif
 				// data already set via 'notifyFastClock' and 'SetFastClock' - only answer is missing
-				SendFastClockTelegram(OPC_SL_RD_DATA, GetFastClockTime(0) /*hour*/, GetFastClockTime(1) /*min*/, IsClockRunning() ? GetDevider() : 0); // 0xE7, 0 = clock not running
+        LocoNet.sendLongAck(LnPacket->data[0]);
 			} // if(LnPacket->data[2] == FC_SLOT) // FastClock-Data received via LocoNet
 		} // if(LnPacket->data[0] OPC_WR_SL_DATA)  // EF
 	} // if(getLnMsgSize(LnPacket) == 4)
@@ -215,20 +222,20 @@ void SendFastClockTelegram(uint8_t opCode, uint8_t ui8_FCMasterHour, uint8_t ui8
     im FastClock Telegramm wird der Teiler mit 1:yy angegeben
     -> daraus folgt: unser Teiler muss durch 10 geteilt werden, bevor er gesendet wird
   */
-  uint8_t ui8_Dev(ui8_Devider / 10);
+  uint8_t ui8_DeviderDivBy10(ui8_Devider / 10);
 
   // formulas are taken from: ~github.jmri\jmri\java\src\jmri\jmrix\loconet\LocoNetSlot.java
   uint8_t ui8_min((255 - (60 - ui8_FCMasterMinute)) & 0x7F);
   uint8_t ui8_hour((256 - (24 - ui8_FCMasterHour)) & 0x7F);
 
   // calculate checksum:
-  uint8_t ui8_ChkSum(opCode ^ 0x0E ^ FC_SLOT ^ ui8_Dev ^ FC_FRAC_RESET_LOW ^ FC_FRAC_RESET_HIGH ^ ui8_min ^ ui8_TrackState ^ ui8_hour ^ 0x40 ^ GetCV(ID_DEVICE) ^ GetCV(SOFTWARE_ID) ^ 0xFF);  //XOR
+  uint8_t ui8_ChkSum(opCode ^ 0x0E ^ FC_SLOT ^ ui8_DeviderDivBy10 ^ FC_FRAC_RESET_LOW ^ FC_FRAC_RESET_HIGH ^ ui8_min ^ ui8_TrackState ^ ui8_hour ^ 0x40 ^ GetCV(ID_DEVICE) ^ GetCV(SOFTWARE_ID) ^ 0xFF);  //XOR
   bitWrite(ui8_ChkSum, 7, 0);     // set MSB zero
 
   addByteLnBuf( &LnTxBuffer, opCode);           //0xE7 or 0xEF
   addByteLnBuf( &LnTxBuffer, 0x0E);             //length
   addByteLnBuf( &LnTxBuffer, FC_SLOT);          //0x7B (=123)
-  addByteLnBuf( &LnTxBuffer, ui8_Dev);
+  addByteLnBuf( &LnTxBuffer, ui8_DeviderDivBy10);
   addByteLnBuf( &LnTxBuffer, FC_FRAC_RESET_LOW);
   addByteLnBuf( &LnTxBuffer, FC_FRAC_RESET_HIGH);
   addByteLnBuf( &LnTxBuffer, ui8_min);
@@ -254,10 +261,26 @@ void SendFastClockTelegram(uint8_t opCode, uint8_t ui8_FCMasterHour, uint8_t ui8
   }
 }
 
+void HandleFracMins(uint16_t FracMins)
+{
+  if (!ENABLE_LN_FC_MODUL || !GetClockRate())
+    return;
+
+  if ((i16_FracMinStart - 910) > FracMins) // 910 = (approx.) 60000ms / 66ms
+  {
+    i16_FracMinStart = FracMins;
+    if (ENABLE_LN_FC_INTERN)
+      IncFastClock(1);
+  }
+}
+
 void PollFastClock()
 {
 	// Poll the Current Time from the Command Station
-	FastClockKS.poll();
+	FastClock.poll();
+#if defined DEBUG
+  Serial.println("...poll...");
+#endif
 }
 
 uint16_t readAddressFromClock_OnOff()
