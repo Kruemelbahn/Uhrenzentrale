@@ -237,10 +237,31 @@ void OutTextClockStatus()
   else
   {
     // (FastClock)Master:
-    displayPanel.print(F("Devider 10:"));
+    if(!FASTCLOCK_MAIN_SCR)
+      displayPanel.print(F("Devider 10:"));
+    else
+      displayPanel.print(F("--:--   10:"));
     displayPanel.print(GetDevider());
   }
   DisplayClockState();
+}
+
+void displayTime(int iLine)
+{
+  displayPanel.setCursor(0, iLine);  // set the cursor to column x, line y
+  uint8_t ui8_Hour;
+  uint8_t ui8_Minute;
+  GetFastClock(&ui8_Hour, &ui8_Minute);
+
+  if (ui8_Hour < 23)
+    decout(displayPanel, ui8_Hour, 2);
+  else
+    displayPanel.print("??");
+  displayPanel.print(':');
+  if (ui8_Minute < 60)
+    decout(displayPanel, ui8_Minute, 2);
+  else
+    displayPanel.print("??");
 }
 
 void DisplayClockState()
@@ -783,27 +804,14 @@ void HandleDisplayPanel()
   //========================================================================
   if(ui8_DisplayPanelMode == 7)
   { // display FastClock time in bottom row:
-    displayPanel.setCursor(0, 1);  // set the cursor to column x, line y
-    uint8_t ui8_Hour;
-    uint8_t ui8_Minute;
-    if(GetFastClock(&ui8_Hour, &ui8_Minute))
-    {
-      if (ui8_Hour < 23)
-        decout(displayPanel, ui8_Hour, 2);
-      else
-        displayPanel.print("??");
-      displayPanel.print(':');
-      if (ui8_Minute < 60)
-        decout(displayPanel, ui8_Minute, 2);
-      else
-        displayPanel.print("??");
-    }
-    else
-      displayPanel.print(F("--:--"));
+    displayTime(1);
   } // if(ui8_DisplayPanelMode == 7) 
   //========================================================================
   if(ui8_DisplayPanelMode == 10)
   {
+    if(FASTCLOCK_MAIN_SCR)
+      displayTime(0);        
+
     uint8_t ui8_Devider(GetDevider());
     if(ui8_Devider != ui8_DeviderMirror)
     {

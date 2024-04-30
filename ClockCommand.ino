@@ -94,7 +94,7 @@ void InvertClockRunning()
 	if (!b_ClockIsRunning)
 	{ // stop:
     if(bSendFirstStopTelegramm)
- 			SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, 0); // 0xE7, Devider(Rate) = 0 indicates that clockk has stopped 
+ 			SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, 0); // 0xE7, Devider(Rate) = 0 indicates that clock has stopped 
 		ul_WaitDevider = millis();
 	}
   sendClockState();

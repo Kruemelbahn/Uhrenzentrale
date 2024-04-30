@@ -100,6 +100,7 @@ discrete In/Outs used for functionalities:
 #define ENABLE_LN_FC_JMRI     (GetCV(ADD_FUNCTIONS_1) & 0x10)
 
 #define ENABLE_DEVIDER_CHANGE (GetCV(ADD_FUNCTIONS_2) & 0x01)
+#define FASTCLOCK_MAIN_SCR    ((GetCV(ADD_FUNCTIONS_2) & 0x02) && ENABLE_LN_FC_MASTER)
 #define DIRECT_CLOCK_PULSE    (GetCV(ADD_FUNCTIONS_2) & 0x10)
 
 #define UNREFERENCED_PARAMETER(P) { (P) = (P); }
