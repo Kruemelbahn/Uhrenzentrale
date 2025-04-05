@@ -74,30 +74,38 @@ boolean GetStateOdd() { return b_MinuteOdd; }
 
 boolean IsClockRunning() { return b_ClockIsRunning; }
 
-void InvertClockRunning()
+LN_STATUS InvertClockRunning()
 { 
   boolean bSendFirstStartTelegramm(!b_ClockIsRunning);
   boolean bSendFirstStopTelegramm(b_ClockIsRunning);
 
-	b_ClockIsRunning = !b_ClockIsRunning;
-	
   uint8_t ui8_FCHour(0);
   uint8_t ui8_FCMinute(0);
   GetFastClock(&ui8_FCHour, &ui8_FCMinute);
 
-	if (b_ClockIsRunning)
+  LN_STATUS lnState(LN_UNKNOWN_ERROR);
+	if (!b_ClockIsRunning)
 	{ // (re)start:
     if(bSendFirstStartTelegramm)
- 			SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, GetDevider()); // 0xE7
+ 			lnState = SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, GetDevider()); // 0xE7
 		ul_WaitDevider = millis();
 	}
-	if (!b_ClockIsRunning)
+	if (b_ClockIsRunning)
 	{ // stop:
     if(bSendFirstStopTelegramm)
- 			SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, 0); // 0xE7, Devider(Rate) = 0 indicates that clock has stopped 
+ 			lnState = SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, 0); // 0xE7, Devider(Rate) = 0 indicates that clock has stopped 
 		ul_WaitDevider = millis();
 	}
-  sendClockState();
+	if(IGNORE_LN_STATUS)
+		lnState = LN_DONE;
+  if(lnState == LN_DONE)
+  {
+  	b_ClockIsRunning = !b_ClockIsRunning; // must be actualized before calling sendClockState()
+    lnState = sendClockState();
+  }
+	if(IGNORE_LN_STATUS)
+		lnState = LN_DONE;
+  return lnState;
 }
 
 boolean CanSendClockMsg()
@@ -110,7 +118,11 @@ boolean CanSendClockMsg()
   return false;
 }
 
-void SetClockMode(boolean b_mode) { if(b_mode != b_ClockIsRunning) InvertClockRunning(); }
+void SetClockMode(boolean b_mode)
+{ 
+	if(b_mode != b_ClockIsRunning)
+	  InvertClockRunning();
+}
 
 uint8_t GetDevider() { return GetCV(ID_DEVIDER); }
 

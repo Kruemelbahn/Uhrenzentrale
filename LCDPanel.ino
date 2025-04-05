@@ -278,7 +278,8 @@ void DisplayClockState()
     {
       decout(displayPanel, ui16_iCount, 4);
       displayPanel.print(F("-1:"));
-      decout(displayPanel, ui8_Rate, 2);
+      // in Slave-mode, rate is coming direct from FastClock-Master
+      decout(displayPanel, ui8_Rate, 2);  // Rate: 0 = Freeze clock, 1 = normal, 10 = 10:1 etc. max is 0x7F
       displayPanel.print('-');
       displayPanel.print(ui8_Sync? '1' : '0');
       displayPanel.print('-');
@@ -290,7 +291,7 @@ void DisplayClockState()
   }
   else
   {
-    // (FastClock)Master:
+    // FastClock-Master:
     if(IsClockRunning())
     {
       displayPanel.print(F("Running: Stop?"));
@@ -367,11 +368,16 @@ uint16_t GetFactor(uint8_t ui8CvNr)
   uint8_t ui8_Position(GetCountOfDigits(ui8CvNr));
   switch (ui8_Position - ui8_CursorX)
   {
-  case 0: ui16_faktor = 1; break;
-  case 1: ui16_faktor = 10; break;
-  case 2: ui16_faktor = 100; break;
-  case 3: ui16_faktor = 1000; break;
-  case 4: ui16_faktor = 10000; break;
+    case 0: ui16_faktor = 1;
+      break;
+    case 1: ui16_faktor = 10; 
+      break;
+    case 2: ui16_faktor = 100; 
+      break;
+    case 3: ui16_faktor = 1000; 
+      break;
+    case 4: ui16_faktor = 10000; 
+      break;
   }
   return ui16_faktor;
 }
@@ -499,8 +505,11 @@ void HandleDisplayPanel()
         {
           if (ui8_buttons & BUTTON_RIGHT)
           {
-            IncMinute();
-            b_MirrorStateOdd = !b_MirrorStateOdd; // force to display new state
+            // send FastClock (start/stop)-telegramm again (undocumented feature)
+            if (b_ClockIsRunning)
+              SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, GetDevider()); // 0xE7
+            else
+              SendFastClockTelegram(OPC_SL_RD_DATA, ui8_FCHour, ui8_FCMinute, 0); // 0xE7, Devider(Rate) = 0 indicates that clock has stopped 
           }
           else
           {
@@ -516,7 +525,7 @@ void HandleDisplayPanel()
           else if (ui8_buttons & BUTTON_DOWN)
             SetDevider(GetDevider() - 1);
         }
-      }
+      } // if(ENABLE_LN_FC_MASTER)
       return;
     } // if(ui8_DisplayPanelMode == 10)
     //------------------------------------

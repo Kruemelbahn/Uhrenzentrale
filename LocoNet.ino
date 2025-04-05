@@ -177,8 +177,8 @@ void HandleLocoNetMessages()
   } // if(LnPacket)
 
   if(ENABLE_LN_FC_MODUL/* we are also Slave */ && isTimeForProcessActions(&ul_LastFastClockTick, 67))
-    FastClock.process66msActions(); // will call 'notifyFastClock' with sync=0 if neccessary 
-}  
+    FastClock.process66msActions(); // will call 'notifyFastClockFracMins' with sync=0 if neccessary (and so clock will continue running internally)
+}
 
 void HandleFastClockTelegram(lnMsg *LnPacket)
 {
@@ -215,18 +215,18 @@ void HandleFastClockTelegram(lnMsg *LnPacket)
 	//====================================================
 }
 
-void SendFastClockTelegram(uint8_t opCode, uint8_t ui8_FCMasterHour, uint8_t ui8_FCMasterMinute, uint8_t ui8_Devider)
+LN_STATUS SendFastClockTelegram(uint8_t opCode, uint8_t ui8_FCMasterHour, uint8_t ui8_FCMasterMinute, uint8_t ui8_Devider)
 {
   /*
-    der Teiler in dieser Software wir mit 10:xx verwaltet
-    im FastClock Telegramm wird der Teiler mit 1:yy angegeben
+    der Teiler in dieser Software wir mit 10:xx verwaltet (xx = 10...255)
+    im FastClock Telegramm wird der Teiler mit 1:yy angegeben (y = 0, 1...127)
     -> daraus folgt: unser Teiler muss durch 10 geteilt werden, bevor er gesendet wird
   */
-  uint8_t ui8_DeviderDivBy10(ui8_Devider / 10);
+  const uint8_t ui8_DeviderDivBy10(ui8_Devider / 10);
 
   // formulas are taken from: ~github.jmri\jmri\java\src\jmri\jmrix\loconet\LocoNetSlot.java
-  uint8_t ui8_min((255 - (60 - ui8_FCMasterMinute)) & 0x7F);
-  uint8_t ui8_hour((256 - (24 - ui8_FCMasterHour)) & 0x7F);
+  const uint8_t ui8_min((255 - (60 - ui8_FCMasterMinute)) & 0x7F);
+  const uint8_t ui8_hour((256 - (24 - ui8_FCMasterHour)) & 0x7F);
 
   // calculate checksum:
   uint8_t ui8_ChkSum(opCode ^ 0x0E ^ FC_SLOT ^ ui8_DeviderDivBy10 ^ FC_FRAC_RESET_LOW ^ FC_FRAC_RESET_HIGH ^ ui8_min ^ ui8_TrackState ^ ui8_hour ^ 0x40 ^ GetCV(ID_DEVICE) ^ GetCV(SOFTWARE_ID) ^ 0xFF);  //XOR
@@ -249,16 +249,21 @@ void SendFastClockTelegram(uint8_t opCode, uint8_t ui8_FCMasterHour, uint8_t ui8
   addByteLnBuf( &LnTxBuffer, 0xFF );            //Limiter
 
   // Check to see if we have received a complete packet yet
+  LN_STATUS lnState(IGNORE_LN_STATUS ? LN_DONE : LN_UNKNOWN_ERROR);
   LnPacket = recvLnMsg( &LnTxBuffer );    //Prepare to send
   if(LnPacket)
   { // check correctness
-    LocoNet.send( LnPacket );  // Send the received packet from the PC to the LocoNet
-		if (opCode == OPC_WR_SL_DATA)	// 0xEF
+    // Send the received packet from the PC to the LocoNet:
+    lnState = LocoNet.send( LnPacket );
+    if(IGNORE_LN_STATUS)
+      lnState = LN_DONE;
+		if ((lnState == LN_DONE) && (opCode == OPC_WR_SL_DATA))	// 0xEF
 			SetWaitForTelegram(0x02);
 #if defined DEBUG || defined TELEGRAM_FROM_SERIAL
     Printout('T');
 #endif
   }
+  return lnState;
 }
 
 void HandleFracMins(uint16_t FracMins)
@@ -274,13 +279,14 @@ void HandleFracMins(uint16_t FracMins)
   }
 }
 
-void PollFastClock()
+LN_STATUS PollFastClock()
 {
-	// Poll the Current Time from the Command Station
-	FastClock.poll();
+  // Poll the current time from the command station
+  // ...we don't use "FastClock.poll();" because it has no return (so we don't see any error and can't react to the result)...
 #if defined DEBUG
-  Serial.println("...poll...");
+  Serial.println("...poll FastClock...");
 #endif
+  return LocoNet.send(OPC_RQ_SL_DATA, FC_SLOT, 0);
 }
 
 uint16_t readAddressFromClock_OnOff()

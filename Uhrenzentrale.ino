@@ -103,11 +103,12 @@ discrete In/Outs used for functionalities:
 #define FASTCLOCK_MAIN_SCR    ((GetCV(ADD_FUNCTIONS_2) & 0x02) && ENABLE_LN_FC_MASTER)
 #define DIRECT_CLOCK_PULSE    (GetCV(ADD_FUNCTIONS_2) & 0x10)
 
+#define IGNORE_LN_STATUS      (GetCV(ADD_FUNCTIONS_2) & 0x80)
+
 #define UNREFERENCED_PARAMETER(P) { (P) = (P); }
 
 #define MANUFACTURER_ID 13  // NMRA: DIY
-#define DEVELOPER_ID 58     // NMRA: my ID, should be > 20 (1 = FREMO)
-
+#define DEVELOPER_ID  58    // NMRA: my ID, should be > 27 (1 = FREMO, see https://groups.io/g/LocoNet-Hackers/files/LocoNet%20Hackers%20DeveloperId%20List_v27.html)
 //========================================================
 //=== declaration of var's ===============================
 unsigned long ul_MillisAtStart = 0;

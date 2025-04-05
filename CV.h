@@ -12,7 +12,7 @@ enum {  ID_DEVICE = 0, ID_DEVIDER, ID_WAITTIME, ID_RESERVE_2, ID_RESERVE_3, ID_R
 //=== declaration of var's =======================================
 #define PRODUCT_ID SOFTWARE_ID
 static const uint8_t DEVICE_ID = 1;							// CV1: Device-ID
-static const uint8_t SW_VERSION = 10;						// CV7: Software-Version
+static const uint8_t SW_VERSION = 11;						// CV7: Software-Version
 static const uint8_t CLOCKCOMMANDSTATION = 11;  // CV8: Software-ID
 
 static const uint16_t MAX_LN_ADR = 2048;
