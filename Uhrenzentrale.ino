@@ -103,7 +103,7 @@ discrete In/Outs used for functionalities:
 #define FASTCLOCK_MAIN_SCR    ((GetCV(ADD_FUNCTIONS_2) & 0x02) && ENABLE_LN_FC_MASTER)
 #define DIRECT_CLOCK_PULSE    (GetCV(ADD_FUNCTIONS_2) & 0x10)
 
-#define IGNORE_LN_STATUS      (GetCV(ADD_FUNCTIONS_2) & 0x80)
+#define IGNORE_LN_STATUS      (GetCV(ADD_FUNCTIONS_2) & 0x80) // undocumented feature
 
 #define UNREFERENCED_PARAMETER(P) { (P) = (P); }
 
